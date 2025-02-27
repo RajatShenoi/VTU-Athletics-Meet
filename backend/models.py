@@ -4,6 +4,7 @@ db = SQLAlchemy()
 
 class College(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(2), nullable=False, unique=True)
     name = db.Column(db.String(100), nullable=False)
     students = db.relationship('Student', backref='college', lazy=True)
 

@@ -14,14 +14,12 @@
         <table class="table table-striped table-sm">
             <thead>
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">Name</th>
                     <th scope="col">Total Rooms</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="location in locations['locations']" :key="location.id">
-                    <td>{{ location.id }}</td>
                     <td>{{ location.name }}</td>
                     <td>{{ location.num_rooms }}</td>
                 </tr>
@@ -80,10 +78,7 @@ async function createLocation() {
         })
         if (response.ok) {
             await fetchLocations()
-            const modal = document.getElementById('staticBackdrop')
-            const modalInstance = bootstrap.Modal.getInstance(modal)
-            modalInstance.hide()
-            newLocation.value = { name: '' }
+            newLocation.value.name = ''
         } else {
             response.json().then(data => {
                 alert(data['error'])

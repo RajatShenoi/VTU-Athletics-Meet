@@ -14,20 +14,16 @@
         <table class="table table-striped table-sm">
             <thead>
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">Code</th>
                     <th scope="col">Name</th>
                     <th scope="col">Point of Contact</th>
-                    <th scope="col">Total Occupants</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="college in colleges['colleges']" :key="college.id">
-                    <td>{{ college.id }}</td>
                     <td>{{ college.code }}</td>
                     <td>{{ college.name }}</td>
                     <td>{{ college.poc }}</td>
-                    <td>{{ college.num_occupants }}</td>
                 </tr>
             </tbody>
         </table>
@@ -46,11 +42,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="collegeCode" class="form-label">College Code</label>
-                        <input type="text" class="form-control" id="collegeCode" v-model="newCollege.code" placeholder="JN" maxlength="2">
+                        <input type="text" class="form-control" id="collegeCode" v-model="newCollege.code" placeholder="JN" maxlength="3" minlength="2">
                     </div>
                     <div class="mb-3">
                         <label for="contactNumber" class="form-label">Contact Number</label>
-                        <input type="tel" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="08182225341" maxlength="10" minlength="10">
+                        <input type="tel" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="8182225341" maxlength="10" minlength="10">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -64,7 +60,6 @@
   
 <script setup>
 import { ref, onMounted } from 'vue'
-import feather from 'feather-icons'
 
 const colleges = ref([])
 const collegeCount = ref(0)
@@ -95,10 +90,9 @@ async function createCollege() {
         })
         if (response.ok) {
             await fetchColleges()
-            const modal = document.getElementById('staticBackdrop')
-            const modalInstance = bootstrap.Modal.getInstance(modal)
-            modalInstance.hide()
-            newCollege.value = { name: '', code: '', poc: '' }
+            newCollege.value.name = ''
+            newCollege.value.code = ''
+            newCollege.value.poc = ''
         } else {
             response.json().then(data => {
                 alert(data['error'])

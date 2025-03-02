@@ -14,19 +14,15 @@
         <table class="table table-striped table-sm">
             <thead>
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">Location</th>
                     <th scope="col">Room Number</th>
-                    <th scope="col">Occupant Count</th>
                     <th scope="col">Max Occupancy</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="room in rooms['rooms']" :key="room.id">
-                    <td>{{ room.id }}</td>
                     <td>{{ room.location }}</td>
                     <td>{{ room.number }}</td>
-                    <td>{{ room.num_students }}</td>
                     <td>{{ room.max_occupancy }}</td>
                 </tr>
             </tbody>
@@ -52,7 +48,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="roomCapacity" class="form-label">Max Occupancy</label>
-                        <input type="number" class="form-control" id="roomCapacity" v-model="newRoom.max_occupancy" placeholder="2">
+                        <input type="number" class="form-control" id="roomCapacity" v-model="newRoom.max_occupancy" placeholder="2" min="0">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -90,7 +86,6 @@ async function fetchLocations() {
     try {
         const response = await fetch('http://127.0.0.1:5000/api/location/list')
         locations.value = await response.json()
-        console.log(locations.value)
     } catch (error) {
         console.error(error)
     }
@@ -107,10 +102,8 @@ async function createRoom() {
         })
         if (response.ok) {
             await fetchRooms()
-            const modal = document.getElementById('staticBackdrop')
-            const modalInstance = bootstrap.Modal.getInstance(modal)
-            modalInstance.hide()
-            newRoom.value = { name: '', number: '', max_occupancy: 0 }
+            newRoom.value.number = ''
+            newRoom.value.max_occupancy = null
         } else {
             response.json().then(data => {
                 alert(data['error'])

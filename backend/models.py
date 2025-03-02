@@ -4,7 +4,7 @@ db = SQLAlchemy()
 
 class College(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(2), nullable=False, unique=True)
+    code = db.Column(db.String(3), nullable=False, unique=True)
     name = db.Column(db.String(100), nullable=False)
     poc = db.Column(db.String(100), nullable=False)
     students = db.relationship('Student', backref='college', lazy=True)
@@ -27,12 +27,13 @@ class Room(db.Model):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
     students = db.relationship('Student', backref='room', lazy=True)
 
-    def get_student_count(self):
-        return len(self.students)
+    def get_student_count(self, college_id=None):
+        if college_id is None:
+            return len(self.students)
+        a = [student for student in self.students if student.college_id == int(college_id)]
+        return len(a)
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=True)
-    phone = db.Column(db.String(10), nullable=True)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)

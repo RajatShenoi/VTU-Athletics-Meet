@@ -8,18 +8,18 @@ import { RouterLink, RouterView } from 'vue-router'
     <div class="btn-toolbar mb-2 mb-md-0">
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <RouterLink class="nav-link" exact-active-class="active">College</RouterLink>
+                <RouterLink :to="{name: 'admin-setup-college'}" class="nav-link" exact-active-class="active">Colleges</RouterLink>
             </li>
             <li class="nav-item">
-                <RouterLink class="nav-link" exact-active-class="active">Link</RouterLink>
+                <RouterLink :to="{name: 'admin-setup-location'}" class="nav-link" exact-active-class="active">Locations</RouterLink>
             </li>
             <li class="nav-item">
-                <RouterLink class="nav-link" exact-active-class="active">Link</RouterLink>
+                <RouterLink :to="{name: 'admin-setup-room'}" class="nav-link" exact-active-class="active">Rooms</RouterLink>
             </li>
         </ul>
     </div>
     </div>
-    <div class="container">
+    <div>
         <RouterView />
     </div>
 </template>
@@ -36,5 +36,9 @@ body {
   width: 16px;
   height: 16px;
   vertical-align: text-bottom;
+}
+
+.nav-link.active {
+  color: #2470dc;
 }
 </style>

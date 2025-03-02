@@ -1,33 +1,44 @@
-from flask import Flask,request, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-from models import Hostel, Room, db, Student, College
+from models import Location, Room, db, Student, College
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+CORS(app)
 db.init_app(app)
 
 @app.route("/api/college/create", methods=["POST"])
 def create_college():
     try:
         data = request.get_json()
-        required_fields = ["name"]
+        required_fields = ["name", "code", "poc"]
         missing = [field for field in required_fields if field not in data]
         if not data or missing:
             return jsonify({
                 "error": f"Missing required field(s): {', '.join(missing)}"
             }), 400
+        
+        if not data["poc"].isdigit() or len(data["poc"]) != 10:
+            return jsonify({"error": "Contact Number must be numeric and exactly 10 digits"}), 400
 
         college = College(
-            name=data["name"]
+            name=data["name"].strip().capitalize(),
+            code=data["code"].strip().upper(),
+            poc=data["poc"].strip()
         )
+        
         db.session.add(college)
         db.session.commit()
         return jsonify({
             "message": "College created successfully",
             "college": {
                 "id": college.id,
-                "name": college.name
+                "code": college.code,
+                "name": college.name,
+                "poc": college.poc
             }
         }), 201
     except Exception as e:
@@ -38,7 +49,7 @@ def create_college():
 def create_student():
     try:
         data = request.get_json()
-        required_fields = ["name", "phone", "college_id"]
+        required_fields = ["college_id"]
         missing = [field for field in required_fields if field not in data]
 
         if not data or missing:
@@ -46,16 +57,13 @@ def create_student():
                 "error": f"Missing required field(s): {', '.join(missing)}"
             }), 400
         
-        if len(data["phone"]) != 10 or not data["phone"].isdigit():
-            return jsonify({"error": "Phone number must be exactly 10 numeric characters long"}), 400
-        
         college = db.session.get(College, data["college_id"])
         if not college:
             return jsonify({"error": "Invalid college_id provided"}), 400
 
         student = Student(
-            name=data["name"],
-            phone=data["phone"],
+            name=data.get("name"),
+            phone=data.get("phone"),
             college_id=data["college_id"],
             room_id=data.get("room_id")
         )
@@ -74,9 +82,9 @@ def create_student():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-    
-@app.route("/api/hostel/create", methods=["POST"])
-def create_hostel():
+
+@app.route("/api/location/create", methods=["POST"])
+def create_location():
     try:
         data = request.get_json()
         required_fields = ["name"]
@@ -86,44 +94,48 @@ def create_hostel():
                 "error": f"Missing required field(s): {', '.join(missing)}"
             }), 400
 
-        hostel = Hostel(
-            name=data["name"]
+        location = Location(
+            name=data["name"].strip().capitalize()
         )
-        db.session.add(hostel)
+        db.session.add(location)
         db.session.commit()
         return jsonify({
             "message": "Hostel created successfully",
             "hostel": {
-                "id": hostel.id,
-                "name": hostel.name
+                "id": location.id,
+                "name": location.name
             }
         }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-    
+
 @app.route("/api/room/create", methods=["POST"])
 def create_room():
     try:
         data = request.get_json()
-        required_fields = ["max_occupancy", "number", "hostel_id"]
-        missing = [field for field in required_fields if field not in data]
-        if not data or missing:
-            return jsonify({"error": f"Missing required field(s): {', '.join(missing)}"}), 400
-
+        required_fields = ["max_occupancy", "number", "location_id"]
+        for field in required_fields:
+            if not data.get(field) or not str(data.get(field)).strip():
+                return jsonify({"error": f"Field {field} cannot be blank"}), 400
+            
         try:
             max_occupancy = int(data["max_occupancy"])
         except ValueError:
             return jsonify({"error": "Max occupancy must be an integer"}), 400
 
-        hostel = db.session.get(Hostel, data["hostel_id"])
+        hostel = db.session.get(Location, data["location_id"])
         if not hostel:
-            return jsonify({"error": "Invalid hostel_id provided"}), 400
+            return jsonify({"error": "Invalid location_id provided"}), 400
+
+        existing_room = Room.query.filter_by(number=data["number"], location_id=data["location_id"]).first()
+        if existing_room:
+            return jsonify({"error": "Room with the same number in this location already exists"}), 400
 
         room = Room(
             max_occupancy=max_occupancy,
             number=data["number"],
-            hostel_id=data["hostel_id"]
+            location_id=data["location_id"]
         )
         db.session.add(room)
         db.session.commit()
@@ -133,11 +145,66 @@ def create_room():
                 "id": room.id,
                 "max_occupancy": room.max_occupancy,
                 "number": room.number,
-                "hostel_id": room.hostel_id
+                "location_id": room.location_id
             }
         }), 201
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({"error": f"Value error: {str(ve)}"}), 400
     except Exception as e:
         db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/api/college/list", methods=["GET"])
+def get_colleges():
+    try:
+        colleges = College.query.all()
+        return jsonify({
+            "colleges": [
+                {
+                    "id": college.id,
+                    "name": college.name,
+                    "code": college.code,
+                    "poc": college.poc,
+                    "num_occupants": college.get_student_count()
+                } for college in colleges
+            ]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/api/location/list", methods=["GET"])
+def get_locations():
+    try:
+        locations = Location.query.all()
+        return jsonify({
+            "locations": [
+                {
+                    "id": location.id,
+                    "name": location.name,
+                    "num_rooms": location.get_room_count()
+                } for location in locations]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/api/room/list", methods=["GET"])
+def get_rooms():
+    try:
+        rooms = Room.query.all()
+        rooms.sort(key=lambda r: (r.location.name, r.number))
+        return jsonify({
+                    "rooms": [
+                        {
+                            "id": room.id,
+                            "max_occupancy": room.max_occupancy,
+                            "number": room.number,
+                            "location": room.location.name,
+                            "num_students": room.get_student_count()
+                        } for room in rooms
+                    ]
+                }), 200
+    except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == '__main__':

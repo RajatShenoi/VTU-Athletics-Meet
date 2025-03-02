@@ -3,6 +3,9 @@ import AdminHome from '@/views/AdminHome.vue'
 import NotFound from '@/views/NotFound.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import AdminSetup from '@/views/AdminSetup.vue'
+import AdminSetupCollege from '@/components/admin/AdminSetupCollege.vue'
+import AdminSetupLocation from '@/components/admin/AdminSetupLocation.vue'
+import AdminSetupRoom from '@/components/admin/AdminSetupRoom.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,11 +24,25 @@ const router = createRouter({
         {
           path: 'setup',
           name: 'admin-setup',
-          component: AdminSetup
-        },
-        {
-          path: '',
-          redirect: { name: 'admin-dashboard' }
+          redirect: { name: 'admin-setup-college' },
+          component: AdminSetup,
+          children: [
+            {
+              path: 'college',
+              name: 'admin-setup-college',
+              component: AdminSetupCollege
+            },
+            {
+              path: 'location',
+              name: 'admin-setup-location',
+              component: AdminSetupLocation
+            },
+            {
+              path: 'room',
+              name: 'admin-setup-room',
+              component: AdminSetupRoom
+            }
+          ]
         }
       ]
     },

@@ -1,0 +1,119 @@
+<template>
+    <div class="row">
+        <div class="col-6">
+            <h4>Existing colleges ({{ collegeCount }})</h4>
+        </div>
+        <div class="col-6 text-end">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" @click="fetchColleges">Refresh</button>
+                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Add new college</button>
+            </div>
+        </div>  
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Code</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Point of Contact</th>
+                    <th scope="col">Total Occupants</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="college in colleges['colleges']" :key="college.id">
+                    <td>{{ college.id }}</td>
+                    <td>{{ college.code }}</td>
+                    <td>{{ college.name }}</td>
+                    <td>{{ college.poc }}</td>
+                    <td>{{ college.num_occupants }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Create a new college</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="collegeName" class="form-label">College Name</label>
+                        <input type="text" class="form-control" id="collegeName" v-model="newCollege.name" placeholder="JNN College of Engineering" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="collegeCode" class="form-label">College Code</label>
+                        <input type="text" class="form-control" id="collegeCode" v-model="newCollege.code" placeholder="JN" maxlength="2">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactNumber" class="form-label">Contact Number</label>
+                        <input type="tel" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="08182225341" maxlength="10" minlength="10">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" @click="createCollege">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+  
+<script setup>
+import { ref, onMounted } from 'vue'
+import feather from 'feather-icons'
+
+const colleges = ref([])
+const collegeCount = ref(0)
+const newCollege = ref({
+    name: '',
+    code: '',
+    poc: ''
+})
+
+async function fetchColleges() {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/college/list')
+        colleges.value = await response.json()
+        collegeCount.value = colleges.value['colleges'].length
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function createCollege() {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/college/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newCollege.value)
+        })
+        if (response.ok) {
+            await fetchColleges()
+            const modal = document.getElementById('staticBackdrop')
+            const modalInstance = bootstrap.Modal.getInstance(modal)
+            modalInstance.hide()
+            newCollege.value = { name: '', code: '', poc: '' }
+        } else {
+            response.json().then(data => {
+                alert(data['error'])
+            })
+        }
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+onMounted(async () => {
+    await fetchColleges()
+})
+
+</script>
+  
+<style scoped>
+</style>

@@ -17,6 +17,7 @@
                     <th scope="col">Code</th>
                     <th scope="col">Name</th>
                     <th scope="col">Point of Contact</th>
+                    <th scope="col">Total Occupants</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,6 +25,7 @@
                     <td>{{ college.code }}</td>
                     <td>{{ college.name }}</td>
                     <td>{{ college.poc }}</td>
+                    <td>{{ college.num_occupants }}</td>
                 </tr>
             </tbody>
         </table>

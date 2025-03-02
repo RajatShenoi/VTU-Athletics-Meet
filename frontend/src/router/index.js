@@ -11,6 +11,8 @@ import AdminCheckout from '@/views/AdminCheckout.vue'
 import AdminCheckinCollege from '@/components/admin/AdminCheckinCollege.vue'
 import AdminCheckoutCollege from '@/components/admin/AdminCheckoutCollege.vue'
 import AdminReports from '@/views/AdminReports.vue'
+import AdminReportsCollege from '@/components/admin/AdminReportsCollege.vue'
+import AdminReportsLocation from '@/components/admin/AdminReportsLocation.vue'
 
 async function fetchColleges() {
   try {
@@ -104,19 +106,17 @@ const router = createRouter({
           path: 'reports',
           name: 'admin-reports',
           component: AdminReports,
+          redirect: { name: 'admin-reports-college' },
           children: [
             {
-              path: ':collegeCode',
-              name: 'admin-checkout-college',
-              component: AdminCheckoutCollege,
-              beforeEnter: async (to, from, next) => {
-                const validCollegeCodes = await fetchColleges()
-                if (validCollegeCodes.includes(to.params.collegeCode)) {
-                  next()
-                } else {
-                  next({ name: 'not-found' })
-                }
-              }
+              path: 'college',
+              name: 'admin-reports-college',
+              component: AdminReportsCollege,
+            },
+            {
+              path: 'location',
+              name: 'admin-reports-location',
+              component: AdminReportsLocation,
             }
           ]
         }

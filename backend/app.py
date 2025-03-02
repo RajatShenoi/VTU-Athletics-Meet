@@ -360,6 +360,81 @@ def get_occupied_rooms_by_college():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+@app.route("/api/college/report", methods=["GET"])
+def college_report():
+    try:
+        report = []
+        colleges = College.query.all()
+        for college in colleges:
+            rooms_data = (
+                db.session.query(Student.room_id, db.func.count(Student.id))
+                .filter(Student.college_id == college.id, Student.room_id.isnot(None))
+                .group_by(Student.room_id)
+                .all()
+            )
+            room_details = []
+            for room_id, count in rooms_data:
+                room = db.session.get(Room, room_id)
+                if room:
+                    room_details.append({
+                        "room_id": room.id,
+                        "number": room.number,
+                        "location": room.location.name,
+                        "max_occupancy": room.max_occupancy,
+                        "occupied_by_college_count": count
+                    })
+            room_details.sort(key=lambda r: (r["location"], r["number"]))
+            report.append({
+                "college_id": college.id,
+                "college_code": college.code,
+                "college_name": college.name,
+                "college_count": college.get_student_count(),
+                "rooms": room_details
+            })
+        report.sort(key=lambda r: r["college_code"])
+        return jsonify({"report": report}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    
+@app.route("/api/location/report", methods=["GET"])
+def location_report():
+    try:
+        report = []
+        locations = Location.query.all()
+        for location in locations:
+            rooms = Room.query.filter_by(location_id=location.id).all()
+            total_students = sum(room.get_student_count() for room in rooms)
+            room_details = [{
+                "room_id": room.id,
+                "number": room.number,
+                "max_occupancy": room.max_occupancy,
+                "num_students": room.get_student_count(),
+                "college_counts": {
+                    college_code: count
+                    for college_code, count in db.session.query(
+                        College.code, db.func.count(Student.id)
+                    ).join(
+                        Student, Student.college_id == College.id
+                    ).filter(
+                        Student.room_id == room.id
+                    ).group_by(
+                        College.code
+                    ).all()
+                }
+            } for room in rooms]
+            room_details.sort(key=lambda r: r["number"])
+            report.append({
+                "location_id": location.id,
+                "location_name": location.name,
+                "num_rooms": len(rooms),
+                "total_students": total_students,
+                "rooms": room_details
+            })
+        report.sort(key=lambda r: r["location_name"])
+        return jsonify({"report": report}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

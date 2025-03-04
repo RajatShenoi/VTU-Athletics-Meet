@@ -50,6 +50,7 @@
   
 <script setup>
 import { ref, onMounted } from 'vue'
+import router from '@/router'
 
 const locations = ref([])
 const locationCount = ref(0)

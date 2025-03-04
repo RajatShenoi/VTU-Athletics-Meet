@@ -26,7 +26,7 @@ def push_to_api(data, api_url):
 
         entry["location_id"] = ids[entry["location_id"]]
 
-        response = requests.post(api_url, json=entry)
+        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTExMTU3MywianRpIjoiZGMwOWU5NzgtYTQzMC00NTQyLThkNzAtNjkyNDYwNzcxZGE2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDExMTE1NzMsImNzcmYiOiJiYTA2YTNiNC1hMWExLTQ4YTgtYTYyMS1jZjg1ZWMwNmZiNGIiLCJleHAiOjE3NDExMTI0NzN9.hBcI3AjBntwGgzfYYo1MZ8gXI8dDUKM8JpcVZqYzguE'})
         if response.ok:
             print(f"Successfully pushed {entry['location_id']}, {entry['number']} to the API.")
         else:

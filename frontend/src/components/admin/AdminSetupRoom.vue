@@ -62,6 +62,7 @@
   
 <script setup>
 import { ref, onMounted } from 'vue'
+import router from '@/router'
 
 const rooms = ref([])
 const roomCount = ref(0)

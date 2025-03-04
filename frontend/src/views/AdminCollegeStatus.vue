@@ -30,6 +30,7 @@
   
 <script setup>
 import { ref, onMounted } from 'vue'
+import router from '@/router'
 
 const colleges = ref([])
 

@@ -21,9 +21,8 @@
 
 <script setup>
     import { ref } from 'vue';
-    import { useRouter } from 'vue-router';
+    import router from '@/router'
 
-    const router = useRouter();
     const error = ref('');
     const username = ref('');
     const password = ref('');

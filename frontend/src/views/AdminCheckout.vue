@@ -18,6 +18,7 @@
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import router from '@/router'
 
 const colleges = ref([])
 const collegeInput = ref('')

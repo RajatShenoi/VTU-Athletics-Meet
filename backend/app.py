@@ -87,6 +87,45 @@ def create_college():
         db.session.rollback()
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+@app.route("/api/college/update", methods=["PUT"])
+@jwt_required()
+def update_college():
+    try:
+        data = request.get_json()
+        required_fields = ["id"]
+        missing = [field for field in required_fields if field not in data]
+        if not data or missing:
+            return jsonify({
+                "error": f"Missing required field(s): {', '.join(missing)}"
+            }), 400
+
+        college = db.session.get(College, data["id"])
+        if not college:
+            return jsonify({"error": "College not found"}), 404
+
+        if data.get("name"):
+            college.name = data["name"].strip().title()
+        if data.get("code"):
+            college.code = data["code"].strip().upper()
+        if data.get("poc"):
+            if not data["poc"].isdigit() or len(data["poc"]) != 10:
+                return jsonify({"error": "Contact Number must be numeric and exactly 10 digits"}), 400
+            college.poc = data["poc"]
+
+        db.session.commit()
+        return jsonify({
+            "message": "College updated successfully",
+            "college": {
+                "id": college.id,
+                "code": college.code,
+                "name": college.name,
+                "poc": college.poc
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
 @app.route("/api/student/create", methods=["POST"])
 @jwt_required()
 def create_student():

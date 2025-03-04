@@ -4,10 +4,12 @@ db = SQLAlchemy()
 
 class College(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(3), nullable=False, unique=True)
+    code = db.Column(db.String(4), nullable=False, unique=True)
     name = db.Column(db.String(100), nullable=False)
-    poc = db.Column(db.String(100), nullable=False)
+    poc = db.Column(db.String(10), nullable=True)
     students = db.relationship('Student', backref='college', lazy=True)
+    # Yet to arrive; Checked in; Checked out
+    status = db.Column(db.String(20), nullable=False, default='Yet to arrive')
 
     def get_student_count(self):
         return len(self.students)
@@ -22,7 +24,7 @@ class Location(db.Model):
 
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.String(10), nullable=False)
+    number = db.Column(db.Integer, nullable=False)
     max_occupancy = db.Column(db.Integer, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
     students = db.relationship('Student', backref='room', lazy=True)

@@ -1,4 +1,9 @@
 <template>
+    <div class="input-group mb-3">
+        <span class="input-group-text">Code</span>
+        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" v-model="searchValue">
+        <button class="btn btn-success input-group-text" @click="fetchIndividualReport(searchValue)">Search</button>
+    </div>
     <div v-for="college in report['report']" :key="college.id">
         <h5><span class="text-success">{{college.college_code}}</span> - {{ college.college_name }}</h5>
         <div v-if="college['rooms'].length > 0" class="table-responsive">
@@ -32,6 +37,16 @@
 import { ref, onMounted } from 'vue'
 
 const report = ref([])
+const searchValue = ref('')
+
+async function fetchIndividualReport(code) {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${code}`)
+        report.value = await response.json()
+    } catch (error) {
+        console.error(error)
+    }
+}
 
 async function fetchReport() {
     try {

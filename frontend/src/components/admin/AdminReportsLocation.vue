@@ -1,4 +1,12 @@
 <template>
+    <div class="input-group mb-3">
+        <span class="input-group-text">Name</span>
+        <input type="text" list="locations" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" v-model="searchValue">
+        <button class="btn btn-success input-group-text" @click="fetchIndividualReport(searchValue)">Search</button>
+        <datalist id="locations">
+            <option v-for="location in report['report']" :key="location.id" :value="location.location_name"></option>
+        </datalist>
+    </div>
     <div v-for="location in report['report']" :key="location.id">
         <h5>{{ location.location_name }}</h5>
         <div v-if="location['rooms'].length > 0" class="table-responsive">
@@ -37,6 +45,15 @@
 import { ref, onMounted } from 'vue'
 
 const report = ref([])
+
+async function fetchIndividualReport(locationName) {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/api/location/report?location_name=${locationName}`)
+        report.value = await response.json()
+    } catch (error) {
+        console.error(error)
+    }
+}
 
 async function fetchReport() {
     try {

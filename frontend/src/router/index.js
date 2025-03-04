@@ -13,6 +13,7 @@ import AdminCheckoutCollege from '@/components/admin/AdminCheckoutCollege.vue'
 import AdminReports from '@/views/AdminReports.vue'
 import AdminReportsCollege from '@/components/admin/AdminReportsCollege.vue'
 import AdminReportsLocation from '@/components/admin/AdminReportsLocation.vue'
+import AdminCollegeStatus from '@/views/AdminCollegeStatus.vue'
 
 async function fetchColleges() {
   try {
@@ -111,7 +112,7 @@ const router = createRouter({
             {
               path: 'college',
               name: 'admin-reports-college',
-              component: AdminReportsCollege,
+              component: AdminReportsCollege
             },
             {
               path: 'location',
@@ -119,6 +120,11 @@ const router = createRouter({
               component: AdminReportsLocation,
             }
           ]
+        },
+        {
+          path: 'college-status',
+          name: 'admin-college-status',
+          component: AdminCollegeStatus,
         }
       ]
     },

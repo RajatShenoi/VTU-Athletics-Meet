@@ -27,6 +27,12 @@ onMounted(() => {
                 </RouterLink>
             </li>
             <li class="nav-item">
+                <RouterLink :to="{name: 'admin-college-status'}" active-class="active" class="nav-link">
+                <span data-feather="check-circle"></span>
+                College Status
+                </RouterLink>
+            </li>
+            <li class="nav-item">
                 <RouterLink :to="{name: 'admin-checkin'}" active-class="active" class="nav-link">
                 <span data-feather="user-plus"></span>
                 Check in

@@ -1,7 +1,15 @@
-from flask import Flask, request, jsonify
+import io
+
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from models import Location, Room, db, Student, College
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import Table, TableStyle
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -14,22 +22,24 @@ db.init_app(app)
 def create_college():
     try:
         data = request.get_json()
-        required_fields = ["name", "code", "poc"]
+        required_fields = ["name", "code"]
         missing = [field for field in required_fields if field not in data]
         if not data or missing:
             return jsonify({
                 "error": f"Missing required field(s): {', '.join(missing)}"
             }), 400
         
-        if not data["poc"].isdigit() or len(data["poc"]) != 10:
+        if data.get("poc") and (not data["poc"].isdigit() or len(data["poc"]) != 10):
             return jsonify({"error": "Contact Number must be numeric and exactly 10 digits"}), 400
-
+        
         college = College(
             name=data["name"].strip().title(),
             code=data["code"].strip().upper(),
-            poc=data["poc"].strip()
         )
-        
+
+        if data.get('poc'):
+            college.poc = data['poc']
+
         db.session.add(college)
         db.session.commit()
         return jsonify({
@@ -134,7 +144,7 @@ def create_room():
 
         room = Room(
             max_occupancy=max_occupancy,
-            number=data["number"],
+            number=int(data["number"]),
             location_id=data["location_id"]
         )
         db.session.add(room)
@@ -167,7 +177,8 @@ def get_colleges():
                     "name": college.name,
                     "code": college.code,
                     "poc": college.poc,
-                    "num_occupants": college.get_student_count()
+                    "num_occupants": college.get_student_count(),
+                    "status": college.status
                 } for college in colleges
             ]
         }), 200
@@ -250,7 +261,8 @@ def get_college_by_code():
                 "code": college.code,
                 "name": college.name,
                 "poc": college.poc,
-                "num_occupants": college.get_student_count()
+                "num_occupants": college.get_student_count(),
+                "status": college.status
             }
         }), 200
     except Exception as e:
@@ -364,7 +376,11 @@ def get_occupied_rooms_by_college():
 def college_report():
     try:
         report = []
-        colleges = College.query.all()
+        college_code = request.args.get("code")
+        if college_code:
+            colleges = College.query.filter_by(code=college_code.strip().upper()).all()
+        else:
+            colleges = College.query.all()
         for college in colleges:
             rooms_data = (
                 db.session.query(Student.room_id, db.func.count(Student.id))
@@ -389,6 +405,7 @@ def college_report():
                 "college_code": college.code,
                 "college_name": college.name,
                 "college_count": college.get_student_count(),
+                "poc": college.poc,
                 "rooms": room_details
             })
         report.sort(key=lambda r: r["college_code"])
@@ -400,7 +417,11 @@ def college_report():
 def location_report():
     try:
         report = []
-        locations = Location.query.all()
+        location_name = request.args.get("location_name")
+        if location_name:
+            locations = Location.query.filter(Location.name.ilike(f"%{location_name.strip().title()}%")).all()
+        else:
+            locations = Location.query.all()
         for location in locations:
             rooms = Room.query.filter_by(location_id=location.id).all()
             total_students = sum(room.get_student_count() for room in rooms)
@@ -432,6 +453,101 @@ def location_report():
             })
         report.sort(key=lambda r: r["location_name"])
         return jsonify({"report": report}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/api/college/status", methods=["POST"])
+def update_college_status():
+    try:
+        data = request.get_json()
+        required_fields = ["college_id", "status"]
+        missing = [field for field in required_fields if field not in data]
+        if not data or missing:
+            return jsonify({
+                "error": f"Missing required field(s): {', '.join(missing)}"
+            }), 400
+
+        college = db.session.get(College, data["college_id"])
+        if not college:
+            return jsonify({"error": "College not found"}), 404
+        
+        accepted_values = ["Yet to arrive", "Checked in", "Checked out"]
+        if data["status"] not in accepted_values:
+            return jsonify({"error": f"Invalid status. Accepted values are: {', '.join(accepted_values)}"}), 400
+
+        college.status = data["status"]
+        db.session.commit()
+
+        return jsonify({
+            "message": "College status updated successfully",
+            "college": {
+                "id": college.id,
+                "code": college.code,
+                "name": college.name,
+                "poc": college.poc,
+                "status": college.status
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/api/college/report/pdf", methods=["GET"])
+def generate_college_pdf_report():
+    try:
+        report_response = college_report()
+
+        report_data = report_response[0].get_json()["report"]
+
+        buffer = io.BytesIO()
+        pdf = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        pdf.setTitle("College Report")
+        pdf.drawString(30, height - 30, "College Report")
+
+        y = height - 50
+        for college in report_data:
+            pdf.setFont("Helvetica-Bold", 12)
+            pdf.drawString(30, y, f"Code: {college['college_code']}; {college['college_name']}; POC: {college.get('poc', 'N/A')}")
+            pdf.setFont("Helvetica", 10)
+            y -= 20
+
+            if y < 100:
+                pdf.showPage()
+                y = height - 50
+
+            data = [["Location", "Room Number", "Max Occupancy", f"Occupied by {college['college_code']}"]]
+            for room in college["rooms"]:
+                data.append([room["location"], str(room["number"]), str(room["max_occupancy"]), str(room["occupied_by_college_count"])])
+
+            table = Table(data, colWidths=[2 * inch, 1.5 * inch, 1.5 * inch, 2 * inch])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+
+            table.wrapOn(pdf, width, height)
+            table.drawOn(pdf, 30, y - len(data) * 20)
+            y -= len(data) * 20
+
+            pdf.line(30, y - 10, width - 30, y - 10)
+            y -= 20
+
+            if y < 50:
+                pdf.showPage()
+                y = height - 50
+
+            y -= 20
+
+        pdf.save()
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="college_report.pdf", mimetype='application/pdf')
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 

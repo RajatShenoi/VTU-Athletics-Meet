@@ -1,6 +1,45 @@
 <template>
     <hr>
     <h5>You are checking in participants from <span class="text-danger">{{ collegeName }}</span>. <span class="text-success">({{ collegeNumOccupants }} already checked in)</span></h5>
+    <div class="accordion accordion-flush border">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                Currently occupied data (click here)
+            </button>
+            </h2>
+            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+            <div class="accordion-body">
+                <div v-for="college in report['report']" :key="college.id">
+                    <div v-if="college['rooms'].length > 0" class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Room Number</th>
+                                    <th scope="col">{{ college.college_code }} Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="room in college['rooms']" :key="room.id">
+                                    <td>{{ room.location }}</td>
+                                    <td>{{ room.number }}</td>
+                                    <td>{{ room.occupied_by_college_count }}</td>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>Total</th>
+                                    <th>{{college.college_count}}</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr v-if="college['rooms'].length == 0">
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
     <hr>
     <h4>Available Rooms:</h4>
     <div class="table-responsive">
@@ -44,6 +83,17 @@ const collegeName = ref('')
 const collegeNumOccupants = ref(0)
 const rooms = ref([])
 
+const report = ref([])
+
+async function fetchIndividualReport() {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${collegeCode.value}`)
+        report.value = await response.json()
+    } catch (error) {
+        console.error(error)
+    }
+}
+
 async function checkin(room_id) {
     try {
         const response = await fetch('http://127.0.0.1:5000/api/student/checkin', {
@@ -67,6 +117,7 @@ async function checkin(room_id) {
 
 async function updateIndo() {
     collegeCode.value = route.params.collegeCode
+    fetchIndividualReport();
     try {
         const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`);
         if (!res.ok) {

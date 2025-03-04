@@ -36,6 +36,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import router from '@/router'
 
 const route = useRoute()
 const collegeCode = ref(route.params.collegeCode)
@@ -49,19 +50,24 @@ async function checkout(room_id) {
         const response = await fetch('http://127.0.0.1:5000/api/student/checkout', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
             body: JSON.stringify({ room_id, college_id: collegeID.value })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(`${err['error']}`);
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
         }
 
         await updateInfo();
     } catch (error) {
-        console.error('Error checking out:', error)
+        console.error(error)
         alert(error)
     }
 }
@@ -69,28 +75,42 @@ async function checkout(room_id) {
 async function updateInfo() {
     collegeCode.value = route.params.collegeCode
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`);
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
         const data = await res.json();
+        if (!res.ok) {
+            if (res.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch college info')
+        }
         collegeName.value = data['college'].name;
         collegeID.value = data['college'].id;
         collegeNumOccupants.value = data['college'].num_occupants;
     } catch (error) {
-        console.error('Error fetching college name:', error);
-        alert('Error fetching college name:', error);
+        console.error(error);
+        alert(error);
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/college/occupied_rooms?college_id=${collegeID.value}`);
+        const res = await fetch(`http://127.0.0.1:5000/api/college/occupied_rooms?college_id=${collegeID.value}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+        const data = await res.json();
         if (!res.ok) {
-            const err = await res.json()
-            throw new Error(err['error']);
+            if (res.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch checked in rooms')
         }
-        rooms.value = await res.json();
+        rooms.value = data;
     } catch (error) {
-        console.error('Error fetching checked in rooms:', error);
+        console.error(error);
         alert(error);
     }
 }

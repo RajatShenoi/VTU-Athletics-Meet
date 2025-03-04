@@ -38,7 +38,8 @@ async function updateCollegeStatus(college) {
         const response = await fetch(`http://127.0.0.1:5000/api/college/status`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
             body: JSON.stringify({
                 college_id: college.id,
@@ -57,8 +58,19 @@ async function updateCollegeStatus(college) {
 
 async function fetchColleges() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/list')
-        colleges.value = await response.json()
+        const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
+        }
+        colleges.value = data
     } catch (error) {
         console.error(error)
         alert(error)

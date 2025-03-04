@@ -16,6 +16,7 @@
 </template>
   
 <script setup>
+import router from '@/router'
 import { onMounted, ref, computed, watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 
@@ -34,8 +35,19 @@ watch(collegeInput, (newValue) => {
 
 async function fetchColleges() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/list')
-        colleges.value = await response.json()
+        const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch colleges')
+        }
+        colleges.value = data
     } catch (error) {
         console.error(error)
         alert(error)

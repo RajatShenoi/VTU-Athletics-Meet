@@ -75,6 +75,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import router from '@/router'
 
 const route = useRoute()
 const collegeCode = ref(route.params.collegeCode)
@@ -87,10 +88,22 @@ const report = ref([])
 
 async function fetchIndividualReport() {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${collegeCode.value}`)
-        report.value = await response.json()
+        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${collegeCode.value}`, {
+            headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
+        }
+        report.value = data
     } catch (error) {
         console.error(error)
+        alert(error)
     }
 }
 
@@ -99,19 +112,25 @@ async function checkin(room_id) {
         const response = await fetch('http://127.0.0.1:5000/api/student/checkin', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
             body: JSON.stringify({ room_id, college_id: collegeID.value })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
         }
 
         await updateIndo();
     } catch (error) {
-        console.error('Error checking in:', error);
-        alert('Error checking in:', error);
+        console.error(error);
+        alert(error);
     }
 }
 
@@ -119,28 +138,43 @@ async function updateIndo() {
     collegeCode.value = route.params.collegeCode
     fetchIndividualReport();
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`);
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
         const data = await res.json();
+        if (!res.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch colleges')
+        }
         collegeName.value = data['college'].name;
         collegeID.value = data['college'].id;
         collegeNumOccupants.value = data['college'].num_occupants;
     } catch (error) {
-        console.error('Error fetching college name:', error);
-        alert('Error fetching college name:', error);
+        console.error(error);
+        alert(error);
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/room/available?college_id=${collegeID.value}`)
+        const res = await fetch(`http://127.0.0.1:5000/api/room/available?college_id=${collegeID.value}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await res.json();
         if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
+            if (res.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch available rooms')
         }
-        rooms.value = await res.json();
+        rooms.value = data
     } catch (error) {
-        console.error('Error fetching available rooms:', error);
-        alert('Error fetching available rooms:', error);
+        console.error(error);
+        alert(error);
     }
 }
 

@@ -17,7 +17,6 @@
                     <th scope="col">Code</th>
                     <th scope="col">Name</th>
                     <th scope="col">Point of Contact</th>
-                    <th scope="col">Total Occupants</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,12 +24,11 @@
                     <td>{{ college.code }}</td>
                     <td>{{ college.name }}</td>
                     <td>{{ college.poc }}</td>
-                    <td>{{ college.num_occupants }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -73,8 +71,19 @@ const newCollege = ref({
 
 async function fetchColleges() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/list')
-        colleges.value = await response.json()
+        const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch colleges')
+        }
+        colleges.value = data
         collegeCount.value = colleges.value['colleges'].length
     } catch (error) {
         console.error(error)
@@ -86,22 +95,23 @@ async function createCollege() {
         const response = await fetch('http://127.0.0.1:5000/api/college/create', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
             body: JSON.stringify(newCollege.value)
         })
+        const data = await response.json()
         if (response.ok) {
             await fetchColleges()
             newCollege.value.name = ''
             newCollege.value.code = ''
             newCollege.value.poc = ''
         } else {
-            response.json().then(data => {
-                alert(data['error'])
-            })
+            throw new Error(data.error || 'Failed to create college')
         }
     } catch (error) {
         console.error(error)
+        alert(error)
     }
 }
 

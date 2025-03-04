@@ -28,7 +28,7 @@
             </tbody>
         </table>
     </div>
-    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -74,8 +74,19 @@ const newRoom = ref({
 
 async function fetchRooms() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/room/list')
-        rooms.value = await response.json()
+        const response = await fetch('http://127.0.0.1:5000/api/room/list', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
+        }
+        rooms.value = data
         roomCount.value = rooms.value['rooms'].length
     } catch (error) {
         console.error(error)
@@ -84,8 +95,19 @@ async function fetchRooms() {
 
 async function fetchLocations() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/location/list')
-        locations.value = await response.json()
+        const response = await fetch('http://127.0.0.1:5000/api/location/list', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
+        }
+        locations.value = data
     } catch (error) {
         console.error(error)
     }
@@ -96,7 +118,8 @@ async function createRoom() {
         const response = await fetch('http://127.0.0.1:5000/api/room/create', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
             body: JSON.stringify(newRoom.value)
         })

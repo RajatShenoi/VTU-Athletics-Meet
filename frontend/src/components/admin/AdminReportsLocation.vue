@@ -48,8 +48,19 @@ const report = ref([])
 
 async function fetchIndividualReport(locationName) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/location/report?location_name=${locationName}`)
-        report.value = await response.json()
+        const response = await fetch(`http://127.0.0.1:5000/api/location/report?location_name=${locationName}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch individual report')
+        }
+        report.value = data
     } catch (error) {
         console.error(error)
     }
@@ -57,7 +68,18 @@ async function fetchIndividualReport(locationName) {
 
 async function fetchReport() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/location/report')
+        const response = await fetch('http://127.0.0.1:5000/api/location/report', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to fetch report')
+        }
         report.value = await response.json()
     } catch (error) {
         console.error(error)

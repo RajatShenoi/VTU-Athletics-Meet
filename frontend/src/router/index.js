@@ -14,11 +14,22 @@ import AdminReports from '@/views/AdminReports.vue'
 import AdminReportsCollege from '@/components/admin/AdminReportsCollege.vue'
 import AdminReportsLocation from '@/components/admin/AdminReportsLocation.vue'
 import AdminCollegeStatus from '@/views/AdminCollegeStatus.vue'
+import Home from '@/views/Home.vue'
 
 async function fetchColleges() {
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/college/list')
+    const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      }
+    })
     const data = await response.json()
+    if (!response.ok) {
+        if (response.status === 401) {
+            router.push('/')
+        }
+        throw new Error(data.error || 'Failed to individual report')
+    }
     return data.colleges.map(college => college.code)
   } catch (error) {
     console.error(error)
@@ -26,9 +37,18 @@ async function fetchColleges() {
   }
 }
 
+function isAuthenticated() {
+  return !!localStorage.getItem('access_token');
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '',
+      name: 'home',
+      component: Home
+    },
     {
       path: '/admin',
       name: 'admin',
@@ -135,5 +155,13 @@ const router = createRouter({
     }
   ],
 })
+
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'home' && !isAuthenticated()) {
+    next({ name: 'home' });
+  } else {
+    next();
+  }
+});
 
 export default router

@@ -41,8 +41,19 @@ const searchValue = ref('')
 
 async function fetchIndividualReport(code) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${code}`)
-        report.value = await response.json()
+        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${code}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
+        }
+        report.value = data
     } catch (error) {
         console.error(error)
     }
@@ -50,8 +61,19 @@ async function fetchIndividualReport(code) {
 
 async function fetchReport() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/report')
-        report.value = await response.json()
+        const response = await fetch('http://127.0.0.1:5000/api/college/report', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            if (response.status === 401) {
+                router.push('/')
+            }
+            throw new Error(data.error || 'Failed to individual report')
+        }
+        report.value = data
     } catch (error) {
         console.error(error)
     }

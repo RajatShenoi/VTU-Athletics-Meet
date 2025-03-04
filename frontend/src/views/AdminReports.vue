@@ -7,6 +7,7 @@ const downloadPdfReport = async () => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/pdf',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
     });
 

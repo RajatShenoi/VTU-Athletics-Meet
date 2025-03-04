@@ -2,6 +2,12 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { onMounted } from 'vue'
 import feather from 'feather-icons'
+import router from '@/router'
+
+const logout = () => {
+    localStorage.removeItem('access_token')
+    router.push({ name: 'home' })
+}
 
 onMounted(() => {
     feather.replace()
@@ -49,6 +55,12 @@ onMounted(() => {
                 <span data-feather="file-text"></span>
                 Reports
                 </RouterLink>
+            </li>
+            <li class="nav-item">
+                <button @click="logout" class="nav-link">
+                <span data-feather="log-out"></span>
+                Sign out
+                </button>
             </li>
             </ul>
         </div>

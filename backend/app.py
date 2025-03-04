@@ -1,24 +1,56 @@
 import io
+import os
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-
-from models import Location, Room, db, Student, College
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, TableStyle
+from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
 
+from models import Location, Room, db, Student, College, User
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 CORS(app)
 db.init_app(app)
+jwt = JWTManager(app)
+
+@jwt.unauthorized_loader
+def custom_unauthorized_response(callback):
+    return jsonify({
+        "error": "Authentication required. Please log in to access this resource."
+    }), 401
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    try:
+        data = request.get_json()
+        required_fields = ["username", "password"]
+        missing = [field for field in required_fields if field not in data]
+        if not data or missing:
+            return jsonify({
+                "error": f"Missing required field(s): {', '.join(missing)}"
+            }), 400
+
+        user = User.query.filter_by(username=data["username"]).first()
+        if not user or not check_password_hash(user.password, data["password"]):
+            return jsonify({"error": "Invalid username or password"}), 401
+
+        access_token = create_access_token(identity=str(user.id))
+        return jsonify({"message": "Login successful", "access_token": access_token}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/college/create", methods=["POST"])
+@jwt_required()
 def create_college():
     try:
         data = request.get_json()
@@ -56,6 +88,7 @@ def create_college():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/student/create", methods=["POST"])
+@jwt_required()
 def create_student():
     try:
         data = request.get_json()
@@ -94,6 +127,7 @@ def create_student():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/location/create", methods=["POST"])
+@jwt_required()
 def create_location():
     try:
         data = request.get_json()
@@ -121,6 +155,7 @@ def create_location():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/room/create", methods=["POST"])
+@jwt_required()
 def create_room():
     try:
         data = request.get_json()
@@ -166,6 +201,7 @@ def create_room():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/college/list", methods=["GET"])
+@jwt_required()
 def get_colleges():
     try:
         colleges = College.query.all()
@@ -186,6 +222,7 @@ def get_colleges():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/location/list", methods=["GET"])
+@jwt_required()
 def get_locations():
     try:
         locations = Location.query.all()
@@ -201,6 +238,7 @@ def get_locations():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/room/list", methods=["GET"])
+@jwt_required()
 def get_rooms():
     try:
         rooms = Room.query.all()
@@ -220,6 +258,7 @@ def get_rooms():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     
 @app.route("/api/room/available", methods=["GET"])
+@jwt_required()
 def get_available_rooms():
     try:
         rooms = Room.query.all()
@@ -245,6 +284,7 @@ def get_available_rooms():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/college/fromcode", methods=["GET"])
+@jwt_required()
 def get_college_by_code():
     try:
         college_code = request.args.get("code")
@@ -269,6 +309,7 @@ def get_college_by_code():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     
 @app.route("/api/student/checkin", methods=["POST"])
+@jwt_required()
 def student_checkin():
     try:
         data = request.get_json()
@@ -311,6 +352,7 @@ def student_checkin():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/student/checkout", methods=["POST"])
+@jwt_required()
 def student_checkout():
     try:
         data = request.get_json()
@@ -334,6 +376,7 @@ def student_checkout():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     
 @app.route("/api/college/occupied_rooms", methods=["GET"])
+@jwt_required()
 def get_occupied_rooms_by_college():
     try:
         college_id = request.args.get("college_id")
@@ -373,6 +416,7 @@ def get_occupied_rooms_by_college():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/college/report", methods=["GET"])
+@jwt_required()
 def college_report():
     try:
         report = []
@@ -414,6 +458,7 @@ def college_report():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     
 @app.route("/api/location/report", methods=["GET"])
+@jwt_required()
 def location_report():
     try:
         report = []
@@ -457,6 +502,7 @@ def location_report():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/college/status", methods=["POST"])
+@jwt_required()
 def update_college_status():
     try:
         data = request.get_json()
@@ -493,6 +539,7 @@ def update_college_status():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/api/college/report/pdf", methods=["GET"])
+@jwt_required()
 def generate_college_pdf_report():
     try:
         report_response = college_report()
@@ -551,7 +598,16 @@ def generate_college_pdf_report():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+def create_default_admin():
+    default_admin = User.query.filter_by(username='admin').first()
+    if not default_admin:
+        default_admin = User(username='admin', password=generate_password_hash(os.getenv('PASSWORD')))
+        db.session.add(default_admin)
+        db.session.commit()
+    
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        create_default_admin()
     app.run(debug=True)

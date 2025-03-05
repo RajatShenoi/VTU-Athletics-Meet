@@ -31,12 +31,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const colleges = ref([])
 
 async function updateCollegeStatus(college) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/college/status`, {
+        const response = await fetch(`${API_DOMAIN}/api/college/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ async function updateCollegeStatus(college) {
 
 async function fetchColleges() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+        const response = await fetch(`${API_DOMAIN}/api/college/list`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }

@@ -44,12 +44,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const report = ref([])
+const searchValue = ref('')
 
 async function fetchIndividualReport(locationName) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/location/report?location_name=${locationName}`, {
+        const response = await fetch(`${API_DOMAIN}/api/location/report?location_name=${locationName}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -69,7 +71,7 @@ async function fetchIndividualReport(locationName) {
 
 async function fetchReport() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/location/report', {
+        const response = await fetch(`${API_DOMAIN}/api/location/report`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -81,7 +83,7 @@ async function fetchReport() {
             }
             throw new Error(data.error || 'Failed to fetch report')
         }
-        report.value = await response.json()
+        report.value = data
     } catch (error) {
         console.error(error)
     }

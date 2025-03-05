@@ -22,6 +22,7 @@
 <script setup>
     import { ref } from 'vue';
     import router from '@/router'
+import { API_DOMAIN } from '@/config';
 
     const error = ref('');
     const username = ref('');
@@ -29,7 +30,7 @@
 
     const login = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/login', {
+            const response = await fetch(`${API_DOMAIN}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

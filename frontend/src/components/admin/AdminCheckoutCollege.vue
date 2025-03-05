@@ -37,6 +37,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const route = useRoute()
 const collegeCode = ref(route.params.collegeCode)
@@ -47,7 +48,7 @@ const rooms = ref([])
 
 async function checkout(room_id) {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/student/checkout', {
+        const response = await fetch(`${API_DOMAIN}/api/student/checkout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -75,7 +76,7 @@ async function checkout(room_id) {
 async function updateInfo() {
     collegeCode.value = route.params.collegeCode
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`, {
+        const res = await fetch(`${API_DOMAIN}/api/college/fromcode?code=${collegeCode.value}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -96,7 +97,7 @@ async function updateInfo() {
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/college/occupied_rooms?college_id=${collegeID.value}`, {
+        const res = await fetch(`${API_DOMAIN}/api/college/occupied_rooms?college_id=${collegeID.value}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }

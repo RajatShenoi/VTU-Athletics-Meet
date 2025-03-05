@@ -15,10 +15,11 @@ import AdminReportsCollege from '@/components/admin/AdminReportsCollege.vue'
 import AdminReportsLocation from '@/components/admin/AdminReportsLocation.vue'
 import AdminCollegeStatus from '@/views/AdminCollegeStatus.vue'
 import Home from '@/views/Home.vue'
+import { API_DOMAIN } from '@/config'
 
 async function fetchColleges() {
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+    const response = await fetch(`${API_DOMAIN}/api/college/list`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }

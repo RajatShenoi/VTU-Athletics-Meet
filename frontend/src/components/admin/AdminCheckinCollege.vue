@@ -76,6 +76,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const route = useRoute()
 const collegeCode = ref(route.params.collegeCode)
@@ -88,7 +89,7 @@ const report = ref([])
 
 async function fetchIndividualReport() {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${collegeCode.value}`, {
+        const response = await fetch(`${API_DOMAIN}/api/college/report?code=${collegeCode.value}`, {
             headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -109,7 +110,7 @@ async function fetchIndividualReport() {
 
 async function checkin(room_id) {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/student/checkin', {
+        const response = await fetch(`${API_DOMAIN}/api/student/checkin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -138,7 +139,7 @@ async function updateIndo() {
     collegeCode.value = route.params.collegeCode
     fetchIndividualReport();
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/college/fromcode?code=${collegeCode.value}`, {
+        const res = await fetch(`${API_DOMAIN}/api/college/fromcode?code=${collegeCode.value}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -159,7 +160,7 @@ async function updateIndo() {
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:5000/api/room/available?college_id=${collegeID.value}`, {
+        const res = await fetch(`${API_DOMAIN}/api/room/available?college_id=${collegeID.value}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }

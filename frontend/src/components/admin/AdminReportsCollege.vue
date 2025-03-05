@@ -36,13 +36,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const report = ref([])
 const searchValue = ref('')
 
 async function fetchIndividualReport(code) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/college/report?code=${code}`, {
+        const response = await fetch(`${API_DOMAIN}/api/college/report?code=${code}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -62,7 +63,7 @@ async function fetchIndividualReport(code) {
 
 async function fetchReport() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/report', {
+        const response = await fetch(`${API_DOMAIN}/api/college/report`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }

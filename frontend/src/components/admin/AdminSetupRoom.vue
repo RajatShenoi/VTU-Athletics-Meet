@@ -63,6 +63,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const rooms = ref([])
 const roomCount = ref(0)
@@ -75,7 +76,7 @@ const newRoom = ref({
 
 async function fetchRooms() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/room/list', {
+        const response = await fetch(`${API_DOMAIN}/api/room/list`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -96,7 +97,7 @@ async function fetchRooms() {
 
 async function fetchLocations() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/location/list', {
+        const response = await fetch(`${API_DOMAIN}/api/location/list`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -116,7 +117,7 @@ async function fetchLocations() {
 
 async function createRoom() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/room/create', {
+        const response = await fetch(`${API_DOMAIN}/api/room/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

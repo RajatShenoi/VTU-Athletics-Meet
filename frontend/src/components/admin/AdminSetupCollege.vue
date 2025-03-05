@@ -95,6 +95,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const colleges = ref([])
 const collegeCount = ref(0)
@@ -112,7 +113,7 @@ const editCollegeData = ref({
 
 async function fetchColleges() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+        const response = await fetch(`${API_DOMAIN}/api/college/list`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
@@ -133,7 +134,7 @@ async function fetchColleges() {
 
 async function createCollege() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/create', {
+        const response = await fetch(`${API_DOMAIN}/api/college/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -162,7 +163,7 @@ function editCollege(college) {
 
 async function updateCollege() {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/college/update`, {
+        const response = await fetch(`${API_DOMAIN}/api/college/update`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

@@ -19,6 +19,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import router from '@/router'
+import { API_DOMAIN } from '@/config'
 
 const colleges = ref([])
 const collegeInput = ref('')
@@ -35,7 +36,7 @@ watch(collegeInput, (newValue) => {
 
 async function fetchColleges() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/college/list', {
+        const response = await fetch(`${API_DOMAIN}/api/college/list`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }

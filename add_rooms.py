@@ -26,7 +26,7 @@ def push_to_api(data, api_url):
 
         entry["location_id"] = ids[entry["location_id"]]
 
-        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTExMTU3MywianRpIjoiZGMwOWU5NzgtYTQzMC00NTQyLThkNzAtNjkyNDYwNzcxZGE2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDExMTE1NzMsImNzcmYiOiJiYTA2YTNiNC1hMWExLTQ4YTgtYTYyMS1jZjg1ZWMwNmZiNGIiLCJleHAiOjE3NDExMTI0NzN9.hBcI3AjBntwGgzfYYo1MZ8gXI8dDUKM8JpcVZqYzguE'})
+        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTIwMDMzNiwianRpIjoiMDI5OWVlMzMtYmM1MC00NTI1LTk0Y2MtM2NkNjFhMDEwMTIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDEyMDAzMzYsImNzcmYiOiI1MjkzZmFlMC1lMmVjLTQ3NDMtYmM4OS02MDY0MmU4ZGU2YWUiLCJleHAiOjE3NDEyMDEyMzZ9.A4SmNyNa7q62Ym-GbKHhYy8sumQ48tsVLj6WYtxDAFs'})
         if response.ok:
             print(f"Successfully pushed {entry['location_id']}, {entry['number']} to the API.")
         else:

@@ -1,1 +1,1 @@
-export const API_DOMAIN = 'https://sadrudha.azurewebsites.net';
+export const API_DOMAIN = 'http://127.0.0.1:5000';

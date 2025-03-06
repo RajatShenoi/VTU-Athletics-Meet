@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminHome from '@/views/AdminHome.vue'
 import NotFound from '@/views/NotFound.vue'
-import AdminDashboard from '@/views/AdminDashboard.vue'
 import AdminSetup from '@/views/AdminSetup.vue'
 import AdminSetupCollege from '@/components/admin/AdminSetupCollege.vue'
 import AdminSetupLocation from '@/components/admin/AdminSetupLocation.vue'
@@ -53,14 +52,9 @@ const router = createRouter({
     {
       path: '/admin',
       name: 'admin',
-      redirect: { name: 'admin-dashboard' },
+      redirect: { name: 'admin-setup' },
       component: AdminHome,
       children: [
-        {
-          path: 'dashboard',
-          name: 'admin-dashboard',
-          component: AdminDashboard
-        },
         {
           path: 'setup',
           name: 'admin-setup',

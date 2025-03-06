@@ -622,9 +622,6 @@ def generate_college_pdf_report():
             table.drawOn(pdf, 30, y - len(data) * 20)
             y -= len(data) * 20
 
-            pdf.line(30, y - 10, width - 30, y - 10)
-            y -= 20
-
             if y < 50:
                 pdf.showPage()
                 y = height - 50

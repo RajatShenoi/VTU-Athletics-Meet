@@ -21,12 +21,6 @@ onMounted(() => {
         <div class="position-sticky pt-3">
             <ul class="nav flex-column">
             <li class="nav-item">
-                <RouterLink :to="{name: 'admin-dashboard'}" class="nav-link" active-class="active" aria-current="page">
-                <span data-feather="home"></span>
-                Dashboard
-                </RouterLink>
-            </li>
-            <li class="nav-item">
                 <RouterLink :to="{name: 'admin-setup'}" active-class="active" class="nav-link">
                 <span data-feather="tool"></span>
                 Setting Up

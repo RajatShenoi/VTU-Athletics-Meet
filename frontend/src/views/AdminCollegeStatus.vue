@@ -16,7 +16,7 @@
                     <td>{{ college.code }}</td>
                     <td>{{ college.name }}</td>
                     <td>
-                        <select v-model="college.status" @change="updateCollegeStatus(college)" :class="{'btn btn-sm': true, 'btn-danger': college.status === 'Checked out', 'btn-success': college.status === 'Checked in', 'btn-info': college.status === 'Yet to arrive'}">
+                        <select :id="'status-' + college.id" v-model="college.status" @change="updateCollegeStatus(college)" :class="{'btn btn-sm': true, 'btn-danger': college.status === 'Checked out', 'btn-success': college.status === 'Checked in', 'btn-info': college.status === 'Yet to arrive'}">
                             <option value="Yet to arrive">Yet to arrive</option>
                             <option value="Checked in">Checked in</option>
                             <option value="Checked out">Checked out</option>

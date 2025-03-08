@@ -50,7 +50,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="contactNumber" class="form-label">Contact Number</label>
-                        <input type="tel" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="8182225341" maxlength="10" minlength="10">
+                        <input type="tel" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="8182225341" maxlength="128" minlength="10">
                     </div>
                 </div>
                 <div class="modal-footer">

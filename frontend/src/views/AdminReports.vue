@@ -29,13 +29,44 @@ const downloadPdfReport = async () => {
     console.error('There was a problem with the fetch operation:', error);
   }
 };
+
+const downloadPdfLocationReport = async () => {
+  try {
+    const response = await fetch(`${API_DOMAIN}/api/location/report/pdf`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'location_report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
 </script>
 
 <template>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Reports</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-      <button class="btn btn-warning" @click="downloadPdfReport">PDF Report</button>
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button class="btn btn-warning" @click="downloadPdfReport">PDF College</button>
+          <button class="btn btn-info" @click="downloadPdfLocationReport">PDF Location</button>
+        </div>
         <ul class="nav nav-tabs">
             <li class="nav-item">
                 <RouterLink :to="{name: 'admin-reports-college'}" class="nav-link" exact-active-class="active">Colleges</RouterLink>

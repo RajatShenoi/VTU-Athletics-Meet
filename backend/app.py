@@ -6,11 +6,14 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, PageBreak
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
+
+
 
 from models import Location, Room, db, Student, College, User
 
@@ -582,27 +585,25 @@ def update_college_status():
 def generate_college_pdf_report():
     try:
         report_response = college_report()
-
         report_data = report_response[0].get_json()["report"]
 
         buffer = io.BytesIO()
-        pdf = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
 
-        pdf.setTitle("College Report")
-        pdf.drawString(30, height - 30, "College Report")
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'Title',
+            parent=styles['Normal'],
+            fontSize=12,
+            leading=14,
+            alignment=0,  # Left align
+            spaceAfter=10
+        )
 
-        y = height - 50
         for college in report_data:
-            pdf.setFont("Helvetica-Bold", 12)
-            pdf.drawString(30, y, f"Code: {college['college_code']}; {college['college_name']}; POC: {college.get('poc', 'N/A')}")
-            pdf.setFont("Helvetica", 10)
-            y -= 20
-
-            if y < 100:
-                pdf.showPage()
-                y = height - 50
-
+            college_info = f"Code: {college['college_code']}; {college['college_name']}; POC: {college.get('poc', 'N/A')}"
+            elements.append(Paragraph(college_info, title_style))
             data = [["Location", "Room Number", "Max Occupancy", f"Occupied by {college['college_code']}"]]
             for room in college["rooms"]:
                 data.append([room["location"], str(room["number"]), str(room["max_occupancy"]), str(room["occupied_by_college_count"])])
@@ -618,19 +619,53 @@ def generate_college_pdf_report():
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ]))
 
-            table.wrapOn(pdf, width, height)
-            table.drawOn(pdf, 30, y - len(data) * 20)
-            y -= len(data) * 20
+            elements.append(table)
 
-            if y < 50:
-                pdf.showPage()
-                y = height - 50
-
-            y -= 20
-
-        pdf.save()
+        doc.build(elements)
         buffer.seek(0)
         return send_file(buffer, as_attachment=True, download_name="college_report.pdf", mimetype='application/pdf')
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/api/location/report/pdf", methods=["GET"])
+@jwt_required()
+def generate_location_pdf_report():
+    try:
+        report_response = location_report()
+        report_data = report_response[0].get_json()["report"]
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        styles = getSampleStyleSheet()
+        normal_style = styles['Normal']
+
+        for location in report_data:
+            elements.append(Paragraph(f"Location: {location['location_name']}; Total Students: {location['total_students']}", styles['Title']))
+            data = [["Room Number", "Max Occupancy", "Current Count", "Colleges"]]
+            for room in location["rooms"]:
+                colleges = ", ".join([f"{college_code}: {count}" for college_code, count in room["college_counts"].items()])
+                data.append([str(room["number"]), str(room["max_occupancy"]), str(room["num_students"]), Paragraph(colleges, normal_style)])
+
+            table = Table(data, colWidths=[1.5 * inch, 1.5 * inch, 1.5 * inch, 3 * inch])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('WORDWRAP', (3, 1), (3, -1), 'CJK')
+            ]))
+
+            elements.append(table)
+            elements.append(PageBreak())
+
+        doc.build(elements)
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="location_report.pdf", mimetype='application/pdf')
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 

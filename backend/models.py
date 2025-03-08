@@ -11,7 +11,7 @@ class College(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(4), nullable=False, unique=True)
     name = db.Column(db.String(100), nullable=False)
-    poc = db.Column(db.String(10), nullable=True)
+    poc = db.Column(db.String(128), nullable=True)
     students = db.relationship('Student', backref='college', lazy=True)
     # Yet to arrive; Checked in; Checked out
     status = db.Column(db.String(20), nullable=False, default='Yet to arrive')

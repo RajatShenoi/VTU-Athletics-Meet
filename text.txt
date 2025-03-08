@@ -1,0 +1,4 @@
+export PASSWORD="Admin@123"
+export JWT_SECRET_KEY="abjdvfbalj26158375onsajkfsdf10^(#!nkajsdbauyfguas)"
+export DB_USER="sadrudha"
+export DB_PASS="Admin123"

@@ -110,10 +110,8 @@ def update_college():
             college.name = data["name"].strip().title()
         if data.get("code"):
             college.code = data["code"].strip().upper()
-        if data.get("poc"):
-            if not data["poc"].isdigit() or len(data["poc"]) != 10:
-                return jsonify({"error": "Contact Number must be numeric and exactly 10 digits"}), 400
-            college.poc = data["poc"]
+        
+        college.poc = data["poc"]
 
         db.session.commit()
         return jsonify({
@@ -364,6 +362,8 @@ def student_checkin():
 
         college = db.session.get(College, data["college_id"])
         if not college:
+            college = College.query.filter_by(code=data["college_id"].strip().upper()).first()
+        if not college:
             return jsonify({"error": "College not found"}), 404
 
         room = db.session.get(Room, data["room_id"])
@@ -373,8 +373,10 @@ def student_checkin():
         if room.get_student_count() >= room.max_occupancy:
             return jsonify({"error": "Room is full"}), 400
 
+        college_id = college.id
+
         student = Student(
-            college_id=data["college_id"],
+            college_id=college_id,
             room_id=data["room_id"]
         )
 

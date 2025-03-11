@@ -16,7 +16,7 @@ def push_to_api(data, api_url):
             "name": entry["college name"]
         }
         print(entry)
-        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTIwMDMzNiwianRpIjoiMDI5OWVlMzMtYmM1MC00NTI1LTk0Y2MtM2NkNjFhMDEwMTIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDEyMDAzMzYsImNzcmYiOiI1MjkzZmFlMC1lMmVjLTQ3NDMtYmM4OS02MDY0MmU4ZGU2YWUiLCJleHAiOjE3NDEyMDEyMzZ9.A4SmNyNa7q62Ym-GbKHhYy8sumQ48tsVLj6WYtxDAFs'})
+        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTY3NDM0OCwianRpIjoiYzUyMDVjNzMtYzMyNi00YThjLTk3OGUtZGFmZjFhZDQwYTEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDE2NzQzNDgsImNzcmYiOiI5NzdlZGMxZi04NjdjLTQ3OWQtYmZiMi03ODU1ZTU0MzU5OWYiLCJleHAiOjE3NDE2NzUyNDh9.m_R3mu6f_l6p7z3-gFjaZ2CAfti6PPLTCzg1Xz4vzHs'})
         if response.ok:
             print(f"Successfully pushed {entry['code']} to the API.")
         else:

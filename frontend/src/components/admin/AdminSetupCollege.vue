@@ -46,11 +46,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="collegeCode" class="form-label">College Code</label>
-                        <input type="text" class="form-control" id="collegeCode" v-model="newCollege.code" placeholder="JN" maxlength="3" minlength="2">
+                        <input type="text" class="form-control" id="collegeCode" v-model="newCollege.code" placeholder="D001" maxlength="4" minlength="2">
                     </div>
                     <div class="mb-3">
                         <label for="contactNumber" class="form-label">Contact Number</label>
-                        <input type="tel" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="8182225341" maxlength="128" minlength="10">
+                        <input type="text" class="form-control" id="contactNumber" v-model="newCollege.poc" placeholder="8182225341" maxlength="128" minlength="10">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -75,11 +75,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="editCollegeCode" class="form-label">College Code</label>
-                            <input type="text" class="form-control" id="editCollegeCode" v-model="editCollegeData.code" maxlength="3" minlength="2">
+                            <input type="text" class="form-control" id="editCollegeCode" v-model="editCollegeData.code" maxlength="4" minlength="2">
                         </div>
                         <div class="mb-3">
                             <label for="editContactNumber" class="form-label">Contact Number</label>
-                            <input type="tel" class="form-control" id="editContactNumber" v-model="editCollegeData.poc" maxlength="10" minlength="10">
+                            <input type="text" class="form-control" id="editContactNumber" v-model="editCollegeData.poc" maxlength="128" minlength="10">
                         </div>
                     </div>
                     <div class="modal-footer">

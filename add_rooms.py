@@ -19,14 +19,16 @@ def push_to_api(data, api_url):
 
         ids = {
             "Sharavathi": 1,
-            "Krishna": 2,
-            "Bhadra": 3,
-            "Tunga": 4
+            "Bhadra": 2,
+            "Tunga": 3,
+            "Krishna": 4,
+            "Mess Rooms": 5,
+            "Guest House": 6
         }
 
         entry["location_id"] = ids[entry["location_id"]]
 
-        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTIwMDMzNiwianRpIjoiMDI5OWVlMzMtYmM1MC00NTI1LTk0Y2MtM2NkNjFhMDEwMTIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDEyMDAzMzYsImNzcmYiOiI1MjkzZmFlMC1lMmVjLTQ3NDMtYmM4OS02MDY0MmU4ZGU2YWUiLCJleHAiOjE3NDEyMDEyMzZ9.A4SmNyNa7q62Ym-GbKHhYy8sumQ48tsVLj6WYtxDAFs'})
+        response = requests.post(api_url, json=entry, headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTY3NDU4MCwianRpIjoiZDcxOWUyNDktYjI4MC00ZmE5LWJjMDctMmIyOTg0ZWU2ZWJjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDE2NzQ1ODAsImNzcmYiOiJkYjQzODZkZS1mMjQ4LTQzM2UtYjE2YS04ZDA4MmM1ZDNmODUiLCJleHAiOjE3NDE2NzU0ODB9.XIGShRSbFHTGj5Wa8EwsHbf5bn7gsPcR2upIRlWs1cU'})
         if response.ok:
             print(f"Successfully pushed {entry['location_id']}, {entry['number']} to the API.")
         else:
